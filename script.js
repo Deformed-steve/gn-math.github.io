@@ -216,80 +216,97 @@ function displayZones(zones) {
         document.getElementById("allSummary").textContent = `All Zones (${zones.length})`;
     }
 
-    const lazyImages = document.querySelectorAll('img.lazy-zone-img');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !zoneViewer.hidden) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove("lazy-zone-img");
-                observer.unobserve(img);
-            }
-        });
-    }, {
-        rootMargin: "100px", 
-        threshold: 0.1
+<script>
+  const lazyImages = document.querySelectorAll('img.lazy-zone-img');
+  const imageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !zoneViewer.hidden) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.classList.remove("lazy-zone-img");
+        observer.unobserve(img);
+      }
     });
+  }, {
+    rootMargin: "100px",
+    threshold: 0.1
+  });
 
-    lazyImages.forEach(img => {
-        imageObserver.observe(img);
-    });
-}
+  lazyImages.forEach(img => {
+    imageObserver.observe(img);
+  });
 
-function filterZones() {
+  function filterZones() {
     const query = searchBar.value.toLowerCase();
-    const filteredZones = zones.filter(zone => zone.name.toLowerCase().includes(query));
+    const filteredZones = zones.filter(zone =>
+      zone.name.toLowerCase().includes(query)
+    );
     if (query.length !== 0) {
-        document.getElementById("featuredZonesWrapper").removeAttribute("open");
+      document.getElementById("featuredZonesWrapper").removeAttribute("open");
     }
     displayZones(filteredZones);
-}
+  }
 
-function openZone(file) {
+  function openZone(file) {
     if (file.url.startsWith("http")) {
-        window.open(file.url, "_blank");
+      window.open(file.url, "_blank");
     } else {
-        const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-        fetch(url+"?t="+Date.now()).then(response => response.text()).then(html => {
-            if (zoneFrame.contentDocument === null) {
-                zoneFrame = document.createElement("iframe");
-                zoneFrame.id = "zoneFrame";
-                zoneViewer.appendChild(zoneFrame);
-            }
-            zoneFrame.contentDocument.open();
-            zoneFrame.contentDocument.write(html);
-            zoneFrame.contentDocument.close();
-            document.getElementById('zoneName').textContent = file.name;
-            document.getElementById('zoneId').textContent = file.id;
-            document.getElementById('zoneAuthor').textContent = "by " + file.author;
-            if (file.authorLink) {
-                document.getElementById('zoneAuthor').href = file.authorLink;
-            }
-            zoneViewer.style.display = "block";
-            const url = new URL(window.location);
-            url.searchParams.set('id', file.id);
-            history.pushState(null, '', url.toString());
-            zoneViewer.hidden = true;
-        }).catch(error => alert("Failed to load zone: " + error));
+      const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
+      fetch(url + "?t=" + Date.now())
+        .then(response => response.text())
+        .then(html => {
+          if (zoneFrame.contentDocument === null) {
+            zoneFrame = document.createElement("iframe");
+            zoneFrame.id = "zoneFrame";
+            zoneViewer.appendChild(zoneFrame);
+          }
+          zoneFrame.contentDocument.open();
+          zoneFrame.contentDocument.write(html);
+          zoneFrame.contentDocument.close();
+          document.getElementById('zoneName').textContent = file.name;
+          document.getElementById('zoneId').textContent = file.id;
+          document.getElementById('zoneAuthor').textContent = "by " + file.author;
+          if (file.authorLink) {
+            document.getElementById('zoneAuthor').href = file.authorLink;
+          }
+          zoneViewer.style.display = "block";
+          const newUrl = new URL(window.location);
+          newUrl.searchParams.set('id', file.id);
+          history.pushState(null, '', newUrl.toString());
+          zoneViewer.hidden = true;
+        })
+        .catch(error => alert("Failed to load zone: " + error));
     }
-}
-<!-- Load particles.js -->
+  }
+</script>
+
+<!-- Load particles.js once -->
 <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 
 <!-- Particle container -->
 <div id="particles-js" style="position:fixed; width:100%; height:100%; top:0; left:0; z-index:-1;"></div>
 
-<!-- Load particles.js -->
-<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-
-<div id="particles-js" style="position:fixed; width:100%; height:100%; top:0; left:0; z-index:-1;"></div>
-
 <script>
   particlesJS("particles-js", {
-    particles: { /* config here */ },
-    interactivity: { /* config here */ },
+    particles: {
+      number: { value: 80, density: { enable: true, value_area: 800 } },
+      color: { value: "#ffffff" },
+      shape: { type: "circle" },
+      opacity: { value: 0.5 },
+      size: { value: 3, random: true },
+      line_linked: {
+        enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1
+      },
+      move: { enable: true, speed: 4, out_mode: "out" }
+    },
+    interactivity: {
+      detect_on: "canvas",
+      events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+      modes: { grab: { distance: 140, line_linked: { opacity: 1 } }, push: { particles_nb: 4 } }
+    },
     retina_detect: true
   });
+</script>
 
   function aboutBlank() {
     const newWindow = window.open("about:blank", "_blank");
@@ -730,4 +747,5 @@ HTMLCanvasElement.prototype.toDataURL = function (...args) {
     return "";
 
 };
+
 
